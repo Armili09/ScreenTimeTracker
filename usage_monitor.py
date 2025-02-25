@@ -21,44 +21,50 @@ class UsageMonitor:
             for proc in psutil.process_iter(['name', 'cmdline']):
                 try:
                     process_name = proc.info['name'].lower()
-                    cmdline = proc.info['cmdline']
+                    cmdline = proc.info.get('cmdline', [])
+
+                    # Check for browser processes with specific URLs
+                    if cmdline:
+                        for arg in cmdline:
+                            if isinstance(arg, str):
+                                if 'youtube.com' in arg.lower():
+                                    return 'youtube', 'YouTube'
+                                if 'netflix.com' in arg.lower():
+                                    return 'netflix', 'Netflix'
 
                     # Check for browser processes
-                    if cmdline and any('youtube.com' in arg.lower() for arg in cmdline):
-                        return 'youtube.com', 'YouTube'
-                    if cmdline and any('netflix.com' in arg.lower() for arg in cmdline):
-                        return 'netflix.com', 'Netflix'
+                    for app_name in ['chrome', 'firefox', 'msedge']:
+                        if app_name in process_name:
+                            return app_name, self.tracked_apps[app_name]
 
-                    # Return process name for other tracked apps
-                    return process_name, process_name
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
-        except:
+            return None, None
+        except Exception as e:
+            print(f"Error in get_active_window_process: {e}")
             return None, None
 
     def start_monitoring(self):
         """Start monitoring app usage"""
         self.running = True
         while self.running:
-            process_name, window_title = self.get_active_window_process()
+            process_name, app_name = self.get_active_window_process()
 
-            if process_name:
+            if process_name and app_name:
                 current_time = datetime.now()
 
-                # Check for tracked apps
-                for app_process, app_name in self.tracked_apps.items():
-                    if app_process in str(process_name).lower():
-                        self.data_manager.update_app_usage(app_name, 1)  # Add 1 second
+                # Update usage time
+                self.data_manager.update_app_usage(app_name, 1)  # Add 1 second
 
-                        # Check limits and notify if exceeded
-                        daily_limit = self.data_manager.get_app_limit(app_name)
-                        if daily_limit:
-                            current_usage = self.data_manager.get_today_usage(app_name)
-                            if current_usage >= daily_limit * 60:  # Convert minutes to seconds
-                                self.notification_system.show_notification(
-                                    f"{app_name} Usage Limit",
-                                    f"You have exceeded your daily limit for {app_name}"
-                                )
+                # Check limits and notify if exceeded
+                daily_limit = self.data_manager.get_app_limit(app_name)
+                if daily_limit:
+                    current_usage = self.data_manager.get_today_usage(app_name)
+                    if current_usage >= daily_limit * 60:  # Convert minutes to seconds
+                        self.notification_system.show_notification(
+                            f"{app_name} Usage Limit",
+                            f"You have exceeded your daily limit for {app_name}"
+                        )
 
             time.sleep(1)  # Check every second
 
