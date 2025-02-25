@@ -11,7 +11,7 @@ from ui_components import StatsFrame, SettingsFrame, CustomStyle
 class AppTracker:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Screen Time Monitor")  # Updated title
+        self.root.title("🎮 Digital Wellness Trainer")  # Gamified title
         self.root.geometry("900x700")
         self.root.configure(bg=CustomStyle.BG_COLOR)
 
@@ -41,9 +41,9 @@ class AppTracker:
         self.stats_frame = StatsFrame(self.notebook, self.data_manager)
         self.settings_frame = SettingsFrame(self.notebook, self.data_manager)
 
-        # Add frames to notebook with icons if available
-        self.notebook.add(self.stats_frame, text=" Statistics ")  # Added spacing for better appearance
-        self.notebook.add(self.settings_frame, text=" Settings ")
+        # Add frames to notebook with emojis
+        self.notebook.add(self.stats_frame, text=" 📊 Progress ")
+        self.notebook.add(self.settings_frame, text=" ⚙️ Setup ")
 
         # Start monitoring thread
         self.monitor_thread = threading.Thread(target=self.usage_monitor.start_monitoring, daemon=True)
