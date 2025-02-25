@@ -52,6 +52,7 @@ class CustomStyle:
 
         # Progress bar style
         style.configure("Horizontal.TProgressbar",
+                      thickness=25,
                       troughcolor=CustomStyle.CARD_BG,
                       background=CustomStyle.SUCCESS_COLOR,
                       bordercolor=CustomStyle.CARD_BG,
@@ -72,9 +73,9 @@ class StatsFrame(ttk.Frame):
 
     def setup_ui(self):
         """Setup statistics UI components"""
-        self.configure(padding=20)
+        self.configure(padding="20")
 
-        # Today's usage section
+        # Today's usage section with gamified elements
         title_frame = ttk.Frame(self, style="TFrame")
         title_frame.pack(fill='x', pady=(0,20))
 
@@ -124,7 +125,12 @@ class StatsFrame(ttk.Frame):
                 "Firefox": "🦊",
                 "Microsoft Edge": "📱",
                 "Netflix": "🎬",
-                "YouTube": "▶️"
+                "YouTube": "▶️",
+                "Amazon Prime": "📺",
+                "Twitch": "🎮",
+                "Instagram": "📸",
+                "Twitter": "🐦",
+                "Facebook": "👥"
             }
             emoji = emoji_map.get(app_name, "📱")
 
@@ -218,6 +224,33 @@ class SettingsFrame(ttk.Frame):
                   style="TButton",
                   command=self.add_new_app).pack(side='left')
 
+        # Popular Apps Section
+        ttk.Label(self, text="🌟 Popular Apps", 
+                 style="Title.TLabel").pack(anchor='w', pady=(20,10))
+
+        popular_frame = ttk.Frame(self, style="Card.TFrame")
+        popular_frame.pack(fill='x', padx=10, pady=5)
+
+        popular_apps = [
+            ("YouTube", "▶️"), ("Netflix", "🎬"), 
+            ("Amazon Prime", "📺"), ("Twitch", "🎮"),
+            ("Instagram", "📸"), ("Twitter", "🐦"), 
+            ("Facebook", "👥")
+        ]
+
+        for app, emoji in popular_apps:
+            app_frame = ttk.Frame(popular_frame, style="Card.TFrame")
+            app_frame.pack(fill='x', pady=5, padx=5)
+
+            ttk.Label(app_frame, 
+                     text=f"{emoji} {app}",
+                     style="Subtitle.TLabel").pack(side='left', padx=5)
+
+            ttk.Button(app_frame,
+                      text="Add to Tracking",
+                      style="TButton",
+                      command=lambda a=app: self.add_popular_app(a)).pack(side='right', padx=5)
+
         # Time limits section
         ttk.Label(self, text="⏱️ Time Limits", 
                  style="Title.TLabel").pack(anchor='w', pady=(20,10))
@@ -226,6 +259,12 @@ class SettingsFrame(ttk.Frame):
         self.limits_frame.pack(fill='x')
 
         self.update_limits_ui()
+
+    def add_popular_app(self, app_name):
+        """Add a popular app to tracking"""
+        if app_name not in self.data_manager.data["limits"]:
+            self.data_manager.set_app_limit(app_name, 60)  # Default 1 hour limit
+            self.update_limits_ui()
 
     def add_new_app(self):
         """Add new app to track"""
