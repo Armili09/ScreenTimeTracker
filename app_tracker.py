@@ -11,29 +11,39 @@ from ui_components import StatsFrame, SettingsFrame, CustomStyle
 class AppTracker:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("App Usage Tracker")
-        self.root.geometry("900x700")  # Increased window size
+        self.root.title("Screen Time Monitor")  # Updated title
+        self.root.geometry("900x700")
         self.root.configure(bg=CustomStyle.BG_COLOR)
 
         # Apply custom styling
         CustomStyle.apply()
+
+        # Set icon
+        try:
+            self.root.iconbitmap("assets/app_icon.ico")
+        except:
+            pass  # Icon loading is optional
 
         # Initialize components
         self.data_manager = DataManager()
         self.notification_system = NotificationSystem()
         self.usage_monitor = UsageMonitor(self.data_manager, self.notification_system)
 
-        # Create notebook for tabs
-        self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(expand=True, fill='both', padx=10, pady=5)
+        # Create main container with padding
+        self.main_container = ttk.Frame(self.root, padding="10", style="Main.TFrame")
+        self.main_container.pack(expand=True, fill='both')
+
+        # Create notebook for tabs with custom styling
+        self.notebook = ttk.Notebook(self.main_container)
+        self.notebook.pack(expand=True, fill='both', padx=5, pady=5)
 
         # Create main frames
         self.stats_frame = StatsFrame(self.notebook, self.data_manager)
         self.settings_frame = SettingsFrame(self.notebook, self.data_manager)
 
-        # Add frames to notebook
-        self.notebook.add(self.stats_frame, text="Statistics")
-        self.notebook.add(self.settings_frame, text="Settings")
+        # Add frames to notebook with icons if available
+        self.notebook.add(self.stats_frame, text=" Statistics ")  # Added spacing for better appearance
+        self.notebook.add(self.settings_frame, text=" Settings ")
 
         # Start monitoring thread
         self.monitor_thread = threading.Thread(target=self.usage_monitor.start_monitoring, daemon=True)

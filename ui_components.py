@@ -6,18 +6,50 @@ from datetime import datetime, timedelta
 
 class CustomStyle:
     """Custom styling for the application"""
-    BG_COLOR = "#f0f2f5"
-    ACCENT_COLOR = "#4CAF50"
-    TEXT_COLOR = "#2c3e50"
+    # Main colors
+    BG_COLOR = "#E8F5E9"  # Light mint background
+    PRIMARY_COLOR = "#2E7D32"  # Dark green
+    SECONDARY_COLOR = "#1976D2"  # Blue
+    ACCENT_COLOR = "#FF5722"  # Orange
+    WARNING_COLOR = "#F44336"  # Red
+    TEXT_COLOR = "#263238"  # Dark gray
     FONT_FAMILY = "Helvetica"
+
+    # Chart colors
+    CHART_COLORS = ['#2E7D32', '#1976D2', '#FF5722', '#9C27B0', '#FFC107']
 
     @staticmethod
     def apply():
         style = ttk.Style()
-        style.configure(".", font=(CustomStyle.FONT_FAMILY, 10))
-        style.configure("Title.TLabel", font=(CustomStyle.FONT_FAMILY, 16, "bold"), foreground=CustomStyle.TEXT_COLOR)
-        style.configure("Subtitle.TLabel", font=(CustomStyle.FONT_FAMILY, 12, "bold"), foreground=CustomStyle.TEXT_COLOR)
-        style.configure("Custom.TButton", font=(CustomStyle.FONT_FAMILY, 10), background=CustomStyle.ACCENT_COLOR)
+
+        # Configure main styles
+        style.configure(".", 
+                      font=(CustomStyle.FONT_FAMILY, 10),
+                      background=CustomStyle.BG_COLOR)
+
+        # Title style
+        style.configure("Title.TLabel",
+                      font=(CustomStyle.FONT_FAMILY, 16, "bold"),
+                      foreground=CustomStyle.PRIMARY_COLOR)
+
+        # Subtitle style
+        style.configure("Subtitle.TLabel",
+                      font=(CustomStyle.FONT_FAMILY, 12, "bold"),
+                      foreground=CustomStyle.SECONDARY_COLOR)
+
+        # Custom button style
+        style.configure("Custom.TButton",
+                      font=(CustomStyle.FONT_FAMILY, 10, "bold"),
+                      background=CustomStyle.ACCENT_COLOR,
+                      foreground="white")
+
+        # Progress bar style
+        style.configure("Horizontal.TProgressbar",
+                      background=CustomStyle.PRIMARY_COLOR,
+                      troughcolor=CustomStyle.BG_COLOR,
+                      bordercolor=CustomStyle.SECONDARY_COLOR,
+                      lightcolor=CustomStyle.PRIMARY_COLOR,
+                      darkcolor=CustomStyle.SECONDARY_COLOR)
 
 class StatsFrame(ttk.Frame):
     def __init__(self, parent, data_manager):
@@ -67,7 +99,7 @@ class StatsFrame(ttk.Frame):
                      style="Subtitle.TLabel").grid(row=0, column=1, padx=10)
 
             if limit > 0:
-                progress = ttk.Progressbar(app_frame, length=300, mode='determinate')
+                progress = ttk.Progressbar(app_frame, length=300, mode='determinate', style="Horizontal.TProgressbar")
                 progress['value'] = min(100, (usage_minutes / limit) * 100)
                 progress.grid(row=1, column=0, columnspan=2, pady=(5,0), sticky='ew')
 
@@ -77,11 +109,13 @@ class StatsFrame(ttk.Frame):
         self.ax.clear()
         self.ax.set_facecolor(CustomStyle.BG_COLOR)
 
+        i = 0
         for app_name in self.data_manager.data["usage"].keys():
             weekly_usage = self.data_manager.get_weekly_usage(app_name)
             dates = list(weekly_usage.keys())
             minutes = [seconds/60 for seconds in weekly_usage.values()]
-            self.ax.plot(dates, minutes, label=app_name, marker='o', linewidth=2)
+            self.ax.plot(dates, minutes, label=app_name, marker='o', linewidth=2, color=CustomStyle.CHART_COLORS[i % len(CustomStyle.CHART_COLORS)])
+            i += 1
 
         self.ax.set_xlabel('Date', fontsize=10, color=CustomStyle.TEXT_COLOR)
         self.ax.set_ylabel('Minutes', fontsize=10, color=CustomStyle.TEXT_COLOR)
